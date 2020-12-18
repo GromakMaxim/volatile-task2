@@ -9,24 +9,22 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class App {
-    private int THREADS_NUMBER = 3;
+    private final int THREADS_NUMBER = 10;
 
     public static void main(String[] args) throws InterruptedException {
         App myApp = new App();
-        LongAdder balance = new LongAdder();
-        List<Shop> shopList = Stream.of(new Shop("Магазин1"),
-                new Shop("Магазин2"),
-                new Shop("Магазин3"))
-                .collect(Collectors.toList());
-
         ExecutorService executorService = Executors.newFixedThreadPool(myApp.THREADS_NUMBER);//создаём исполнитель
+        LongAdder balance = new LongAdder(); //итоговый результат
 
-        shopList.stream()
+        List<Shop> shops = Stream.of(new Shop("Магазин1"),//создаём магазины
+                new Shop("Магазин2"),
+                new Shop("Магазин3")).collect(Collectors.toList());
+
+        executorService.submit(() -> shops.stream()
                 .map(Shop::getBalance)
-                .forEach(shopBalance -> shopBalance
-                        .forEach(item -> executorService.submit(() -> balance.add(item))));
-
-        executorService.shutdown();
+                .forEach(shopBalance -> shopBalance.forEach(balance::add)));
+        
+        executorService.shutdown();//упорядоченное завершение работы, при котором ранее отправленные задачи выполняются, а новые задачи не принимаются
         executorService.awaitTermination(10, TimeUnit.SECONDS);
         System.out.println("\nРезультат: " + balance.sum());
     }
