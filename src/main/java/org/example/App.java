@@ -16,13 +16,13 @@ public class App {
         ExecutorService executorService = Executors.newFixedThreadPool(myApp.THREADS_NUMBER);//создаём исполнитель
         LongAdder balance = new LongAdder(); //итоговый результат
 
-        List<Shop> shops = Stream.of(new Shop("Магазин1"),//создаём магазины
-                new Shop("Магазин2"),
-                new Shop("Магазин3"))
+        List<Shop> shops = Stream.of(new Shop("Магазин1", balance),//создаём магазины
+                new Shop("Магазин2", balance),
+                new Shop("Магазин3", balance))
                 .collect(Collectors.toList());
 
         for (Shop shop : shops) {
-            executorService.submit(new ThreadCounter(shop, balance));
+            executorService.submit(shop);
         }
 
         executorService.shutdown();//упорядоченное завершение работы, при котором ранее отправленные задачи выполняются, а новые задачи не принимаются
