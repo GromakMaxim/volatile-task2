@@ -18,12 +18,13 @@ public class App {
 
         List<Shop> shops = Stream.of(new Shop("Магазин1"),//создаём магазины
                 new Shop("Магазин2"),
-                new Shop("Магазин3")).collect(Collectors.toList());
+                new Shop("Магазин3"))
+                .collect(Collectors.toList());
 
-        executorService.submit(() -> shops.stream()
-                .map(Shop::getBalance)
-                .forEach(shopBalance -> shopBalance.forEach(balance::add)));
-        
+        for (Shop shop : shops) {
+            executorService.submit(new ThreadCounter(shop, balance));
+        }
+
         executorService.shutdown();//упорядоченное завершение работы, при котором ранее отправленные задачи выполняются, а новые задачи не принимаются
         executorService.awaitTermination(10, TimeUnit.SECONDS);
         System.out.println("\nРезультат: " + balance.sum());
